@@ -1,0 +1,65 @@
+---
+title: "xgboost"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+require(xgboost)
+#provides getTrainTest, convertToMatrix, and cleanDataSet
+source('./src/data_prep.R')
+source('./src/utils.R')
+set.seed(50)
+```
+
+## Description
+
+This document demonstrates the training and plots some charts around xgboost.  The goal of this model is to predict whether or not a shopper on Black Friday is male or female.  
+
+```{r ingest}
+cleanDataSet=loadData() %>% cleanData() %>% updateTarget("Gender")
+summary(cleanDataSet)
+```
+
+## Data setup
+
+```{r data}
+#test vs train
+splitData=getTrainTest(cleanDataSet, "Gender")
+#convert train to xgboost form
+train=convertToMatrix(splitData$train, "Gender")
+#convert test to xgboost form
+test=convertToMatrix(splitData$test, "Gender")
+```
+
+## Train Model
+
+```{r model}
+model=xgboost(data = train$features, label = train$target, max_depth = 4,
+        eta = 1, nthread = 4, nrounds = 10,objective = "binary:logistic")
+```
+
+## Variable importance
+
+The most important variables:
+
+```{r importance, echo=FALSE}
+plotImportance(model, colnames(train$features))
+```
+
+
+## Model performance
+
+Confusion matrix at threshold 0.5:
+
+```{r results}
+getConfusionMatrixByThreshold=generateConfusionMatrixByThreshold(model, test$features, test$target)
+getConfusionMatrixByThreshold(.5)
+```
+
+## Conclusion
+
+The model performs slightly better than simply using the average male/female ratio in the test set.  We now save the model so we can load it and perform predictions:
+
+```{r save}
+save(model, file='./data/model.rdata')
+```
