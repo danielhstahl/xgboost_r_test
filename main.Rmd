@@ -23,12 +23,14 @@ summary(cleanDataSet)
 ## Data setup
 
 ```{r data}
+#need the factor levels for when applying to new data
+levels=getFactorLevels(cleanDataSet)
+#xgboost requires pre-converted matrix
+xgboostData=convertToMatrix(cleanDataSet, "Gender")
 #test vs train
-splitData=getTrainTest(cleanDataSet, "Gender")
-#convert train to xgboost form
-train=convertToMatrix(splitData$train, "Gender")
-#convert test to xgboost form
-test=convertToMatrix(splitData$test, "Gender")
+splitData=getTrainTest(xgboostData$features, xgboostData$target)
+train=splitData$train
+test=splitData$test
 ```
 
 ## Train Model
@@ -62,4 +64,5 @@ The model performs slightly better than simply using the average male/female rat
 
 ```{r save}
 save(model, file='./data/model.rdata')
+save(levels, file='./data/levels.rdata')
 ```

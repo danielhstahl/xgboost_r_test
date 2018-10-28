@@ -154,12 +154,14 @@ summary(cleanDataSet)</code></pre>
 </div>
 <div id="data-setup" class="section level2">
 <h2>Data setup</h2>
-<pre class="r"><code>#test vs train
-splitData=getTrainTest(cleanDataSet, &quot;Gender&quot;)
-#convert train to xgboost form
-train=convertToMatrix(splitData$train, &quot;Gender&quot;)
-#convert test to xgboost form
-test=convertToMatrix(splitData$test, &quot;Gender&quot;)</code></pre>
+<pre class="r"><code>#need the factor levels for when applying to new data
+levels=getFactorLevels(cleanDataSet)
+#xgboost requires pre-converted matrix
+xgboostData=convertToMatrix(cleanDataSet, &quot;Gender&quot;)
+#test vs train
+splitData=getTrainTest(xgboostData$features, xgboostData$target)
+train=splitData$train
+test=splitData$test</code></pre>
 </div>
 <div id="train-model" class="section level2">
 <h2>Train Model</h2>
@@ -216,7 +218,8 @@ getConfusionMatrixByThreshold(.5)</code></pre>
 <div id="conclusion" class="section level2">
 <h2>Conclusion</h2>
 <p>The model performs slightly better than simply using the average male/female ratio in the test set. We now save the model so we can load it and perform predictions:</p>
-<pre class="r"><code>save(model, file='./data/model.rdata')</code></pre>
+<pre class="r"><code>save(model, file='./data/model.rdata')
+save(levels, file='./data/levels.rdata')</code></pre>
 </div>
 
 

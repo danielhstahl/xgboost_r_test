@@ -33,20 +33,32 @@ updateTarget=function(data, target){
   data %>% convertTarget("Gender", POSITIVE_FACTOR)
 }
 
-convertToMatrix=function(data, target){
+convertToMatrix=function(data, target, xlev=NULL){
   list(
-    features=sparse.model.matrix(as.formula(paste0(target, "~ .")), data = data)[, -1], 
+    features=sparse.model.matrix(
+      as.formula(paste0(target, "~ .")), 
+      data = data, 
+      xlev=xlev
+    )[, -1], 
     target=data[[target]]
   )
 }
 
-getTrainTest=function(data, target, p=.6){
-  trainIndex <- createDataPartition(
-    data[[target]], p = p, 
+getFactorLevels=function(data){
+  lapply(data[, sapply(data, is.factor), drop=F], function(field){
+    levels(field)
+  })
+}
+
+getTrainTest=function(features, target, p=.6){
+  trainIndex <- c(createDataPartition(
+    target, p = p, 
     list = FALSE, 
     times = 1
-  )
-  list(train=data[trainIndex, ], test=data[-trainIndex, ])
+  ))
+  train=list(features=features[trainIndex, ], target=target[trainIndex])
+  test=list(features=features[-trainIndex, ], target=target[-trainIndex])
+  list(train=train, test=test)
 }
 
 
